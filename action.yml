@@ -1,0 +1,67 @@
+name: Zoho Cliq Release Notifier
+description: >
+  Send GitHub Release and Pre-release notifications to Zoho Cliq via an
+  incoming webhook.
+author: iamsadjad
+
+branding:
+  icon: bell
+  color: blue
+
+inputs:
+  webhook_url:
+    description: >
+      Zoho Cliq incoming webhook URL. Store this in a repository or organization
+      secret (for example secrets.ZOHO_CLIQ_WEBHOOK_URL) and pass it here.
+      When empty, the action skips notification and exits successfully.
+    required: false
+    default: ''
+  tag:
+    description: >
+      Release tag to notify about. When set, the action fetches the release from
+      the GitHub API. When empty, the action reads the release from the GitHub
+      release event payload (release published).
+    required: false
+    default: ''
+  notify_prerelease:
+    description: >
+      When true, send notifications for GitHub pre-releases. When false
+      (default), pre-releases are skipped.
+    required: false
+    default: 'false'
+  github_token:
+    description: >
+      GitHub token used to fetch release metadata when tag is provided.
+      Defaults to the workflow GITHUB_TOKEN.
+    required: false
+    default: ${{ github.token }}
+  repository:
+    description: >
+      owner/repo used for API lookups and shown in the Cliq card.
+      Defaults to the current repository.
+    required: false
+    default: ${{ github.repository }}
+
+outputs:
+  notified:
+    description: Whether a Cliq notification was sent (true/false).
+  skipped_reason:
+    description: >
+      Reason the notification was skipped, when applicable
+      (missing_webhook or prerelease_skipped). Empty when notified.
+  http_status:
+    description: HTTP status returned by the Zoho Cliq webhook, when called.
+  release_tag:
+    description: Tag name of the release that was processed, when available.
+  prerelease:
+    description: Whether the processed release is a pre-release (true/false).
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    INPUT_WEBHOOK_URL: ${{ inputs.webhook_url }}
+    INPUT_TAG: ${{ inputs.tag }}
+    INPUT_NOTIFY_PRERELEASE: ${{ inputs.notify_prerelease }}
+    INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+    INPUT_REPOSITORY: ${{ inputs.repository }}

@@ -1,0 +1,27 @@
+---
+name: Bug report
+description: Report a bug in zoho-cliq-release-notifier
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: Do not include webhook URLs or other secrets.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Action version / tag
+      placeholder: v1.2.3
+    validations:
+      required: true
