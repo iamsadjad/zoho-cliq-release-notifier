@@ -1,0 +1,28 @@
+# Example consumer workflow
+
+name: Example Zoho Cliq release notify
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  notify-cliq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notify Zoho Cliq
+        id: cliq
+        uses: iamsadjad/zoho-cliq-release-notifier@v1
+        with:
+          webhook_url: ${{ secrets.ZOHO_CLIQ_WEBHOOK_URL }}
+          notify_prerelease: 'false'
+
+      - name: Show outputs
+        run: |
+          echo "notified=${{ steps.cliq.outputs.notified }}"
+          echo "skipped_reason=${{ steps.cliq.outputs.skipped_reason }}"
+          echo "release_tag=${{ steps.cliq.outputs.release_tag }}"
