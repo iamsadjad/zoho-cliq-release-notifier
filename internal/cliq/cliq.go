@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/httpclient"
 	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/model"
 )
 
@@ -23,9 +24,7 @@ func MaskWebhookURL(raw string) string {
 
 // Send posts the Cliq payload to the incoming webhook URL.
 func Send(client *http.Client, webhookURL string, payload model.CliqPayload) (status int, body string, err error) {
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client = httpclient.CallerOrNew(client)
 	encoded, err := json.Marshal(payload)
 	if err != nil {
 		return 0, "", err

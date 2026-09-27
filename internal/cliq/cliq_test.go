@@ -3,8 +3,10 @@ package cliq_test
 import (
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/cliq"
 	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/model"
@@ -46,6 +48,35 @@ func TestSend_Success(t *testing.T) {
 		t.Fatal(err)
 	}
 	if status != 200 || body != "ok" {
+		t.Fatalf("status=%d body=%q", status, body)
+	}
+}
+
+func TestSend_TransportErrorLeavesStatusUnset(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	server.Close()
+
+	status, body, err := cliq.Send(nil, server.URL, model.CliqPayload{Text: "hello"})
+	if err == nil || !strings.Contains(err.Error(), "network error while calling Zoho Cliq webhook") {
+		t.Fatalf("err=%v", err)
+	}
+	if status != 0 || body != "" {
+		t.Fatalf("status=%d body=%q", status, body)
+	}
+}
+
+func TestSend_HonorsClientTimeout(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		time.Sleep(time.Second)
+	}))
+	defer server.Close()
+
+	client := &http.Client{Timeout: 50 * time.Millisecond}
+	status, body, err := cliq.Send(client, server.URL, model.CliqPayload{Text: "hello"})
+	if err == nil || !strings.Contains(err.Error(), "network error while calling Zoho Cliq webhook") {
+		t.Fatalf("err=%v", err)
+	}
+	if status != 0 || body != "" {
 		t.Fatalf("status=%d body=%q", status, body)
 	}
 }

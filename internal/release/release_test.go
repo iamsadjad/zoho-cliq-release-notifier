@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/release"
 )
@@ -77,6 +78,22 @@ func TestResolve_FetchByTag(t *testing.T) {
 	}
 	if !info.Prerelease || info.TagName != "v2.0.0" {
 		t.Fatalf("%+v", info)
+	}
+}
+
+func TestResolve_FetchHonorsClientTimeout(t *testing.T) {
+	client := &http.Client{
+		Timeout: 50 * time.Millisecond,
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			<-req.Context().Done()
+			return nil, req.Context().Err()
+		}),
+	}
+
+	r := &release.Resolver{HTTPClient: client}
+	_, err := r.Resolve("v1.0.0", "acme/demo", "token", "")
+	if err == nil || !strings.Contains(err.Error(), "failed to fetch release for tag") {
+		t.Fatalf("err=%v", err)
 	}
 }
 
