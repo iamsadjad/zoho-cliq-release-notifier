@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/httpclient"
 	"github.com/iamsadjad/zoho-cliq-release-notifier/internal/model"
 )
 
@@ -57,10 +58,7 @@ func (r *Resolver) fetchByTag(tag, repository, githubToken string) (model.Releas
 		url.PathEscape(tag),
 	)
 
-	client := r.HTTPClient
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client := httpclient.CallerOrNew(r.HTTPClient)
 
 	req, err := http.NewRequest(http.MethodGet, apiURL, nil)
 	if err != nil {

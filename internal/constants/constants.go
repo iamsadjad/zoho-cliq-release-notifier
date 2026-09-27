@@ -1,6 +1,10 @@
 package constants
 
+import "time"
+
 const (
+	// HTTPRequestTimeout bounds each outbound webhook and GitHub API call.
+	HTTPRequestTimeout    = 30 * time.Second
 	BodyTruncateLength    = 1800
 	MessageTextMaxLength  = 3500
 	MaxWhatsNewNotes      = 10
